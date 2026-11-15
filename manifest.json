@@ -1,9 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "__MSG_extName__",
+  "name": "NiFi Dark Mode",
   "version": "0.1.0",
-  "default_locale": "en",
-  "description": "__MSG_extDescription__",
+  "description": "Dark theme for the Apache NiFi interface.",
   "permissions": ["storage"],
   "icons": {
     "16": "icons/icon16.png",
@@ -27,7 +26,7 @@
     }
   ],
   "action": {
-    "default_title": "__MSG_extName__",
+    "default_title": "NiFi Dark Mode",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",

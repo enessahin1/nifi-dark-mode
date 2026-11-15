@@ -2,7 +2,7 @@ const ENV_META = {
   prod: { label: 'Production', color: '#e5484d' },
   test: { label: 'Test', color: '#3b82f6' },
   dev: { label: 'Development', color: '#30ee85' },
-  other: { label: 'Diğer', color: '#8a9ba8' },
+  other: { label: 'Other', color: '#8a9ba8' },
 };
 
 const listEl = document.getElementById('list');
@@ -23,7 +23,7 @@ function render() {
   if (!clusters.length) {
     const empty = document.createElement('p');
     empty.className = 'empty';
-    empty.textContent = 'Henüz cluster eklenmedi.';
+    empty.textContent = 'No clusters added yet.';
     listEl.appendChild(empty);
     return;
   }
@@ -54,7 +54,7 @@ function render() {
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'remove';
-    remove.title = 'Kaldır';
+    remove.title = 'Remove';
     remove.textContent = '✕';
     remove.addEventListener('click', () => {
       clusters = clusters.filter((x) => x.id !== c.id);

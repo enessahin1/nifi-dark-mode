@@ -1,14 +1,14 @@
-// Sayfanın kendi JS dünyasında (world: "MAIN") çalışır. NiFi, bileşen verisini (konum, boyut, durum)
-// D3 ile DOM öğelerine __data__ olarak bağlıyor; bu bilgi eklentinin izole dünyasından görünmez.
+// Runs in the page's own JS world (world: "MAIN"). NiFi binds component data (position, size, status)
+// onto DOM elements as __data__ via D3; that data is invisible from the extension's isolated world.
 //
-// Navigate panelindeki minimap bir <canvas>'a çiziliyor, bu yüzden CSS ile boyanamaz. NiFi minimap'in
-// SVG katmanındaki boş grubun (g.birdseye > g) dönüşümünü zaten ölçek ve kaydırmaya göre güncelliyor;
-// invalid bileşenler için bu gruba bileşen koordinatlarıyla sarı işaretler ekliyoruz. Görünümü dark.css
-// belirler (yalnızca dark mode açıkken görünür, yanıp söner).
+// The Navigate panel's minimap draws onto a <canvas>, so it can't be styled with CSS. NiFi already
+// updates the transform of an empty group (g.birdseye > g) in the minimap's SVG layer to match scale
+// and pan; we add yellow markers to that group with component coordinates for invalid components.
+// Their appearance is set by dark.css (only visible and blinking while dark mode is on).
 
 (() => {
   const SVG_NS = 'http://www.w3.org/2000/svg';
-  const PAD = 36; // minimap çok küçük ölçekte olduğu için işareti bileşenden biraz büyük çiziyoruz
+  const PAD = 36; // the minimap is at a very small scale, so we draw the marker a bit larger than the component
 
   let lastSignature = '';
 
@@ -24,7 +24,7 @@
       if (d && isInvalid(d) && d.position && d.dimensions) items.push(d);
     });
 
-    // process group: içinde invalid bileşen varsa
+    // process group: if it contains an invalid component
     document.querySelectorAll('g.process-group').forEach((el) => {
       const d = el.__data__;
       if (d && d.invalidCount > 0 && d.position && d.dimensions) items.push(d);
@@ -60,7 +60,7 @@
     }
   }
 
-  // NiFi bileşenleri sürekli yeniler; durum değişimini yakalamak için hafif bir yoklama yeterli.
+  // NiFi continuously refreshes components; a light poll is enough to catch status changes.
   setInterval(render, 1500);
   render();
 })();

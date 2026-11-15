@@ -31,7 +31,7 @@
     }
   ],
   "action": {
-    "default_title": "NiFi Dark Mode",
+    "default_title": "NiFi Dark Mode 1.x",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",

@@ -1,11 +1,12 @@
-// Hamburger menü sayfaları (Summary vb.) ana sayfada #shell-dialog içindeki bir iframe'de açılır.
-// Kabuk filtreyi zaten ters çevirdiği için iframe belgesi filtresiz, ayrı bir sınıfla boyanır.
+// Hamburger menu pages (Summary, etc.) open in an iframe inside #shell-dialog on the main page.
+// The shell already inverts the filter, so the iframe document is unfiltered and styled with a separate class.
 const CLASS = window === window.top ? 'nifi-dark' : 'nifi-dark-frame';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-// Sınıfın chrome.storage cevabından önce verilmesi gerekiyor: o birkaç milisaniyede sayfa varsayılan
-// beyazıyla çizilir (özellikle iframe'de açılan Data Provenance gibi sayfalarda beyaz kare görünüyordu).
-// Son seçim, aynı origin'in localStorage'ında eşzamanlı okunabilen bir önbellekte tutulur.
+// The class needs to be applied before the chrome.storage response arrives: in those few milliseconds
+// the page renders with its default white (a white flash was especially visible on pages like Data
+// Provenance that open in an iframe). The last choice is cached in the same origin's localStorage,
+// which can be read synchronously.
 const CACHE_KEY = 'nifi-dark-mode-enabled';
 
 function readCache() {
@@ -20,7 +21,7 @@ function writeCache(enabled) {
   try {
     localStorage.setItem(CACHE_KEY, enabled ? '1' : '0');
   } catch (e) {
-    // localStorage kapalıysa önbellek olmadan devam eder
+    // if localStorage is unavailable, continue without the cache
   }
 }
 
@@ -47,9 +48,9 @@ function svgEl(tag, attrs) {
   return el;
 }
 
-// Rozetin tam merkezine (cx, cy) çizilen durum şekilleri. Yazı tipi glifi piksel ızgarasına oturtulduğu
-// için küçük ölçekte rozetin içinde kayıyordu; vektör şekil her ölçekte aynı yerde kalır.
-// Hangisinin görüneceğini dark.css, kaynak ikonun durumuna bakarak seçer. s: ölçek.
+// Status shapes drawn at the exact center (cx, cy) of the badge. The font glyph snaps to the pixel
+// grid, so it drifted inside the badge at small scales; a vector shape stays in the same spot at every
+// scale. dark.css picks which one shows based on the source icon's status class. s: scale factor.
 function makeGlyph(cx, cy, s) {
   const glyph = svgEl('g', { class: 'nd-glyph' });
 
@@ -76,7 +77,7 @@ function makeGlyph(cx, cy, s) {
       `M${cx - 0.6 * s},${cy + 2 * s} h${1.2 * s} v${1 * s} h${-1.2 * s} Z`,
   });
 
-  // disabled: halka ve çapraz çizgi
+  // disabled: ring and diagonal line
   const ban = svgEl('g', { class: 'nd-ban' });
   ban.append(
     svgEl('circle', { cx, cy, r: 3.9 * s, fill: 'none', stroke: '#000', 'stroke-width': 1.3 * s }),
@@ -90,10 +91,10 @@ function makeGlyph(cx, cy, s) {
   return glyph;
 }
 
-// Processor'ların ve input/output portların durum ikonunun (play/stop/...) arkasına rozet ve şekil çizer.
-// Rengi dark.css, ikonun fill'ine bakarak verir, bu yüzden durum değişince burada bir şey yapmaya gerek yok.
+// Draws a badge and shape behind the status icon (play/stop/...) of processors and input/output ports.
+// dark.css colors it based on the icon's fill, so nothing needs to happen here when the status changes.
 function addStatusBadges() {
-  // [seçici, rozetin sol üst köşesi]: processor ikonu x=55,y=23; port ikonu x=50,y=25
+  // [selector, badge's top-left corner]: processor icon x=55,y=23; port icon x=50,y=25
   const targets = [
     ['g.processor-canvas-details > text.run-status-icon', { x: 52, y: 9 }],
     ['g.port-details > text.run-status-icon', { x: 46, y: 10 }],
@@ -111,8 +112,8 @@ function addStatusBadges() {
   }
 }
 
-// Process group'ların sayaç satırında çalışan / durmuş / invalid ikonlarının arkasına rozet çizer.
-// Yalnızca sayısı sıfırdan büyük olanlar renklenir (dark.css, ikonun .zero sınıfına bakar).
+// Draws a badge behind the running / stopped / invalid icons in a process group's count row.
+// Only ones with a count greater than zero get colored (dark.css checks the icon's .zero class).
 function addGroupBadges() {
   document
     .querySelectorAll(
@@ -125,8 +126,9 @@ function addGroupBadges() {
 
       const x = parseFloat(icon.getAttribute('x'));
       const y = parseFloat(icon.getAttribute('y'));
-      // Rozet 14x14, ikonun mürekkep merkezine (ikon x + 6.5, taban çizgisi - 5.5) oturur. NiFi sayıların
-      // konumunu glifin genişliğine göre hesapladığı için yazı tipi glifi yerinde kalır, sadece görünmez olur.
+      // The badge is 14x14, centered on the icon's ink center (icon x + 6.5, baseline - 5.5). NiFi
+      // computes the numbers' position from the glyph's width, so the font glyph stays in place,
+      // it just becomes invisible.
       const size = 14;
       const cx = x + 6.5;
       const cy = y - 5.5;
@@ -136,8 +138,8 @@ function addGroupBadges() {
     });
 }
 
-// Versiyonlu process group'larda ismin solundaki ikon (check, yıldız, vb.). Glif 18px kalır,
-// çünkü NiFi ismin konumunu bu ikonun genişliğine göre hesaplıyor.
+// Icon to the left of the name in versioned process groups (check, star, etc.). The glyph stays 18px
+// because NiFi computes the name's position from this icon's width.
 function addVersionBadges() {
   document.querySelectorAll('g.process-group > text.version-control').forEach((icon) => {
     if (icon.previousElementSibling?.classList.contains('nd-badge')) return;
@@ -153,7 +155,7 @@ function addVersionBadges() {
   });
 }
 
-// Connection etiketinde "From ..." ve "To ..." satırlarının sağındaki durum ikonu (play/stop).
+// The status icon (play/stop) to the right of the "From ..." and "To ..." lines in a connection's label.
 function addConnectionBadges() {
   document
     .querySelectorAll(
@@ -174,12 +176,12 @@ function addConnectionBadges() {
       badge.setAttribute('rx', '3.5');
       icon.parentNode.insertBefore(badge, icon);
 
-      // kaynak ikonun durum sınıfı (running / stopped / is-missing-port) hangi şeklin görüneceğini belirler
+      // the source icon's status class (running / stopped / is-missing-port) determines which shape shows
       icon.after(makeGlyph(x - 6 + 7.5, y - 12 + 7.5, 1));
     });
 }
 
-// NiFi yakınlaştırma ve yenilemede processor detaylarını yeniden çiziyor.
+// NiFi redraws processor details on zoom and refresh.
 let scheduled = false;
 new MutationObserver(() => {
   if (scheduled) return;

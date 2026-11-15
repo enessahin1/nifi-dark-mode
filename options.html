@@ -92,22 +92,22 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>NiFi Clusterları</h1>
-    <p class="sub">Production olarak işaretlenen cluster'da ekranın çevresine kırmızı çerçeve çizilir. Adres, NiFi'yi açtığınız adresle aynı olmalıdır.</p>
+    <h1>NiFi Clusters</h1>
+    <p class="sub">A red frame is drawn around the screen for a cluster marked as production. The address must match the one you open NiFi at.</p>
 
     <div class="list" id="list"></div>
 
     <div class="card">
       <form id="form">
-        <input id="name" placeholder="İsim (örn. Prod)" required>
+        <input id="name" placeholder="Name (e.g. Prod)" required>
         <input id="url" type="url" placeholder="https://nifi.example.com/nifi" required>
         <select id="env">
           <option value="prod">Production</option>
           <option value="test">Test</option>
           <option value="dev">Development</option>
-          <option value="other">Diğer</option>
+          <option value="other">Other</option>
         </select>
-        <button type="submit" class="add">Ekle</button>
+        <button type="submit" class="add">Add</button>
       </form>
     </div>
   </div>

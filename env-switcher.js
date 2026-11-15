@@ -1,6 +1,6 @@
-// Production olarak işaretlenmiş bir NiFi cluster'ında ekranı kırmızı çerçeveye alır.
-// Cluster listesi chrome.storage.sync içinde 'nd_clusters' anahtarında tutulur, options.html'den yönetilir.
-// Yalnızca üst çerçevede çalışır (manifest'te all_frames verilmedi). Çerçevenin görünümü dark.css'te.
+// Puts a red frame around the screen on a NiFi cluster marked as production.
+// The cluster list is kept under the 'nd_clusters' key in chrome.storage.sync, managed from options.html.
+// Only runs in the top frame (all_frames not set in the manifest). The frame's appearance lives in dark.css.
 
 let clusters = [];
 let frame = null;
@@ -17,8 +17,8 @@ function isProduction() {
   return clusters.some((c) => c.env === 'prod' && originOf(c.url) === location.origin);
 }
 
-// NiFi sayfanın en üstüne ve en altına node adını ("Node-0") yazan 10px'lik şeritler koyuyor.
-// Çerçeve bu yazıların üstüne binip onları kesmesin diye şeritlerin yüksekliği kadar içeriden başlar.
+// NiFi puts 10px strips at the very top and bottom of the page showing the node name ("Node-0").
+// The frame starts inset by the strips' height so it doesn't overlap and cut into that text.
 function placeFrame() {
   if (!frame) return;
   frame.style.top = `${document.getElementById('banner-header')?.offsetHeight || 0}px`;
@@ -52,7 +52,7 @@ function init() {
 if (document.body) init();
 else document.addEventListener('DOMContentLoaded', init, { once: true });
 
-// Şeritler sayfa yüklendikten sonra dolabilir, pencere boyutu da değişebilir.
+// The strips can fill in after the page loads, and the window can also be resized.
 window.addEventListener('load', placeFrame);
 window.addEventListener('resize', placeFrame);
 

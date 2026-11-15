@@ -1,0 +1,752 @@
+/*
+ * NiFi Dark Mode
+ *
+ * 1) Arayüz (header, dialog, tablo, panel): html'e invert filtresi.
+ * 2) Canvas: #canvas-container filtreyi bir kez daha ters çevirir, içindeki renkleri
+ *    biz boyarız. İki filtre üst üste bindiğinde görünen kanal değeri
+ *    0.08 + 0.84 * c olur (c = aşağıda yazılan değer, 0-1 arası), bu yüzden palet
+ *    önceden bu formüle göre hesaplandı: yazılan = (hedef - 20.4) / 0.84 (0-255).
+ *    Hue her iki filtrede de geri döndüğü için renk tonları korunur.
+ */
+
+html.nifi-dark {
+  background: #fff;
+  filter: invert(0.92) hue-rotate(180deg);
+}
+
+html.nifi-dark,
+html.nifi-dark-frame {
+  --nd-bg: #080d13;
+  --nd-grid: #131a22;
+  --nd-body: #18202a;
+  --nd-row-a: #1e2833;
+  --nd-row-b: #141c26;
+  --nd-rule: #343f49;
+  --nd-icon-box: #283340;
+  --nd-pg-head: #2d3d4e;
+  --nd-border: #3b4753;
+  --nd-text-hi: #ffffff;
+  --nd-text-type: #a6bbc9;
+  --nd-text-dim: #6b8391;
+  --nd-text-label: #92aab9;
+  --nd-select: #40aaff;
+  --nd-ok: #32ca7d;
+  --nd-bad: #f25c5c;
+  --nd-ok-icon: #30ee85;
+  --nd-bad-icon: #ff4949;
+  --nd-warn: #f2b03b;
+  --nd-conn: #829bac;
+}
+
+html.nifi-dark img,
+html.nifi-dark video,
+html.nifi-dark iframe {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* ---------- Canvas zemini ---------- */
+
+html.nifi-dark #canvas-container {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: var(--nd-bg);
+  background-image:
+    linear-gradient(to right, var(--nd-grid) 1px, transparent 1px),
+    linear-gradient(var(--nd-grid) 1px, transparent 1px);
+}
+
+/* ---------- Processor / Process Group / Port gövdesi ---------- */
+
+html.nifi-dark #canvas-container g.processor rect.body,
+html.nifi-dark #canvas-container g.process-group rect.body,
+html.nifi-dark #canvas-container g.input-port rect.body,
+html.nifi-dark #canvas-container g.output-port rect.body,
+html.nifi-dark #canvas-container g.funnel rect.body {
+  fill: var(--nd-body);
+}
+
+html.nifi-dark #canvas-container g.component rect.border {
+  stroke: var(--nd-border);
+  stroke-width: 1px;
+}
+
+html.nifi-dark #canvas-container g.component:hover rect.border {
+  stroke: var(--nd-text-dim);
+}
+
+/* İstatistik tablosunun zebra satırları (NiFi bunları fill attribute'u ile veriyor) */
+html.nifi-dark #canvas-container rect[fill="#f4f6f7"] { fill: var(--nd-row-a); }
+html.nifi-dark #canvas-container rect[fill="#ffffff"] { fill: var(--nd-row-b); }
+html.nifi-dark #canvas-container rect[fill="#c7d2d7"] { fill: var(--nd-rule); }
+
+/* Process group başlık ve sayaç bantları */
+html.nifi-dark #canvas-container rect[fill="#b8c6cd"] { fill: var(--nd-pg-head); }
+html.nifi-dark #canvas-container rect[fill="#e3e8eb"] { fill: var(--nd-row-a); }
+html.nifi-dark #canvas-container text.version-control { fill: var(--nd-text-dim); }
+/* Sayacı sıfır olan ikonlar (✓, ■ vb.) sönük ama okunur; sayısı olanlar renklenir */
+html.nifi-dark #canvas-container text.process-group-contents-icon.zero { fill: #d5e1e9 !important; text-shadow: none; }
+
+html.nifi-dark #canvas-container text.process-group-up-to-date:not(.zero) { fill: var(--nd-ok-icon); }
+html.nifi-dark #canvas-container text.process-group-locally-modified:not(.zero),
+html.nifi-dark #canvas-container text.process-group-sync-failure:not(.zero) { fill: var(--nd-warn); }
+html.nifi-dark #canvas-container text.process-group-stale:not(.zero),
+html.nifi-dark #canvas-container text.process-group-locally-modified-and-stale:not(.zero) { fill: var(--nd-bad-icon); }
+
+html.nifi-dark #canvas-container g.connection rect.body { fill: var(--nd-body); }
+
+html.nifi-dark #canvas-container rect.processor-icon-container { fill: var(--nd-icon-box); }
+html.nifi-dark #canvas-container text.processor-icon { fill: #d9bfbe !important; }
+
+/* ---------- Yazılar: isim öne çıkar, ikincil bilgi geri çekilir ---------- */
+
+html.nifi-dark #canvas-container text.processor-name,
+html.nifi-dark #canvas-container text.process-group-name,
+html.nifi-dark #canvas-container text.port-name {
+  fill: var(--nd-text-hi);
+  font-weight: 500;
+}
+
+html.nifi-dark #canvas-container text.processor-type { fill: var(--nd-text-type); }
+html.nifi-dark #canvas-container text.processor-bundle { fill: var(--nd-text-dim); }
+
+html.nifi-dark #canvas-container text.stats-label { fill: var(--nd-text-label); }
+html.nifi-dark #canvas-container text.stats-value { fill: var(--nd-text-hi); }
+html.nifi-dark #canvas-container text.stats-info { fill: var(--nd-text-dim); }
+html.nifi-dark #canvas-container text.process-group-contents-count { fill: var(--nd-text-hi); }
+
+/* ---------- Durum vurgusu (run-status-icon rengine göre çerçeve) ---------- */
+
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#7dc7a0"]) > rect.border,
+html.nifi-dark #canvas-container g.process-group:has(.process-group-running.running) > rect.border {
+  stroke: var(--nd-ok);
+  stroke-width: 1.5px;
+}
+
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#d18686"]) > rect.border {
+  stroke: var(--nd-bad);
+  stroke-opacity: 0.55;
+  stroke-width: 1.5px;
+}
+
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) > rect.border {
+  stroke: var(--nd-warn);
+  stroke-width: 1.5px;
+}
+
+/* Durum ikonu (isimden önceki play/stop): daha parlak ve hafif ışımalı.
+   NiFi rengi fill attribute'u ile veriyor, CSS bunu ezer. */
+/* content.js her durum ikonunun arkasına .nd-badge rect'i ekler. Dark mode kapalıyken görünmez. */
+.nd-badge {
+  fill: transparent;
+  pointer-events: none;
+}
+
+/* Processor ve input/output port durum ikonu. Rozet ikonun hemen önünde durur, NiFi durumu fill
+   attribute'u ile veriyor: yeşil = çalışıyor, kırmızı = durmuş, turuncu = invalid, gri = disabled. */
+html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#7dc7a0"]) { fill: var(--nd-ok-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#d18686"]) { fill: var(--nd-bad-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#cf9f5d"]) { fill: var(--nd-warn); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#728e9b"]) { fill: var(--nd-text-label); }
+
+/* Yazı tipi glifi gizlenir (rozetin içinde piksel ızgarasına oturup kayıyordu); yerine content.js'in
+   rozetin tam merkezine çizdiği vektör şekil görünür. */
+html.nifi-dark #canvas-container text.run-status-icon[fill="#7dc7a0"],
+html.nifi-dark #canvas-container text.run-status-icon[fill="#d18686"],
+html.nifi-dark #canvas-container text.run-status-icon[fill="#cf9f5d"],
+html.nifi-dark #canvas-container text.run-status-icon[fill="#728e9b"] {
+  fill: transparent;
+}
+
+html.nifi-dark #canvas-container text.run-status-icon[fill="#7dc7a0"] + .nd-glyph > .nd-play,
+html.nifi-dark #canvas-container text.run-status-icon[fill="#d18686"] + .nd-glyph > .nd-stop,
+html.nifi-dark #canvas-container text.run-status-icon[fill="#cf9f5d"] + .nd-glyph > .nd-warn,
+html.nifi-dark #canvas-container text.run-status-icon[fill="#728e9b"] + .nd-glyph > .nd-ban {
+  display: inline;
+}
+
+/* Process group sayaç satırı: rozet ikonun hemen önünde durur, sayısı sıfırdan büyükse renklenir */
+html.nifi-dark #canvas-container .nd-badge:has(+ text.process-group-running:not(.zero)) { fill: var(--nd-ok-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.process-group-stopped:not(.zero)) { fill: var(--nd-bad-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.process-group-invalid:not(.zero)) { fill: var(--nd-warn); }
+
+html.nifi-dark #canvas-container text.process-group-running:not(.zero),
+html.nifi-dark #canvas-container text.process-group-stopped:not(.zero),
+html.nifi-dark #canvas-container text.process-group-invalid:not(.zero) {
+  fill: transparent !important; /* yazı tipi glifi gizli: yerine rozetin ortasındaki vektör şekil görünür */
+  text-shadow: none;
+}
+
+html.nifi-dark #canvas-container text.process-group-running:not(.zero) + .nd-glyph > .nd-play,
+html.nifi-dark #canvas-container text.process-group-stopped:not(.zero) + .nd-glyph > .nd-stop,
+html.nifi-dark #canvas-container text.process-group-invalid:not(.zero) + .nd-glyph > .nd-warn {
+  display: inline;
+}
+
+/* Disabled: soluklaştırmak yerine kesik çizgili gri çerçeve, gri rozet ve italik isim */
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#728e9b"]) > rect.border {
+  stroke: var(--nd-text-label);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#728e9b"]) text.processor-name {
+  fill: var(--nd-text-type);
+  font-style: italic;
+}
+
+/* Connection etiketi: "From" ve "To" satırlarındaki durum ikonu (running / stopped / port silinmiş) */
+html.nifi-dark #canvas-container .nd-badge:has(+ text.connection-from-run-status.running),
+html.nifi-dark #canvas-container .nd-badge:has(+ text.connection-to-run-status.running) { fill: var(--nd-ok-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.connection-from-run-status.stopped),
+html.nifi-dark #canvas-container .nd-badge:has(+ text.connection-to-run-status.stopped) { fill: var(--nd-bad-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.connection-from-run-status.is-missing-port),
+html.nifi-dark #canvas-container .nd-badge:has(+ text.connection-to-run-status.is-missing-port) { fill: var(--nd-warn); }
+
+html.nifi-dark #canvas-container text.connection-from-run-status.running,
+html.nifi-dark #canvas-container text.connection-from-run-status.stopped,
+html.nifi-dark #canvas-container text.connection-from-run-status.is-missing-port,
+html.nifi-dark #canvas-container text.connection-to-run-status.running,
+html.nifi-dark #canvas-container text.connection-to-run-status.stopped,
+html.nifi-dark #canvas-container text.connection-to-run-status.is-missing-port {
+  /* yazı tipi glifi gizli: yerine content.js'in çizdiği .nd-glyph şekilleri görünür */
+  fill: transparent !important;
+  text-shadow: none;
+}
+
+.nd-glyph { display: none; }
+
+html.nifi-dark #canvas-container .nd-glyph { display: inline; pointer-events: none; }
+html.nifi-dark #canvas-container .nd-glyph > * { display: none; fill: #000; }
+
+html.nifi-dark #canvas-container text.connection-from-run-status.running + .nd-glyph > .nd-play,
+html.nifi-dark #canvas-container text.connection-to-run-status.running + .nd-glyph > .nd-play,
+html.nifi-dark #canvas-container text.connection-from-run-status.stopped + .nd-glyph > .nd-stop,
+html.nifi-dark #canvas-container text.connection-to-run-status.stopped + .nd-glyph > .nd-stop,
+html.nifi-dark #canvas-container text.connection-from-run-status.is-missing-port + .nd-glyph > .nd-warn,
+html.nifi-dark #canvas-container text.connection-to-run-status.is-missing-port + .nd-glyph > .nd-warn {
+  display: inline;
+}
+
+/* Versiyon kontrol ikonu (process group isminin solu). NiFi rengini inline style ile veriyor,
+   o yüzden rengi style özelliğinden tanıyıp !important ile eziyoruz.
+   yeşil #1A9964 = güncel, kırmızı #BA554A = stale, gri #666666 = yerel değişiklik / sync hatası */
+html.nifi-dark #canvas-container .nd-badge:has(+ text.version-control[style*="rgb(26, 153, 100)"]) { fill: var(--nd-ok-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.version-control[style*="rgb(186, 85, 74)"]) { fill: var(--nd-bad-icon); }
+html.nifi-dark #canvas-container .nd-badge:has(+ text.version-control[style*="rgb(102, 102, 102)"]) { fill: var(--nd-warn); }
+
+html.nifi-dark #canvas-container text.version-control[style*="rgb(26, 153, 100)"],
+html.nifi-dark #canvas-container text.version-control[style*="rgb(186, 85, 74)"],
+html.nifi-dark #canvas-container text.version-control[style*="rgb(102, 102, 102)"] {
+  fill: #000 !important;
+}
+
+/* Seçili bileşen */
+/* NiFi seçili çerçeveyi koyu teal ile boyuyor, koyu zeminde kayboluyor: !important gerekli */
+html.nifi-dark #canvas-container g.component.selected > rect.border {
+  stroke: var(--nd-select) !important;
+  stroke-width: 2px !important;
+}
+
+/* ---------- Connection'lar ve kuyruk ---------- */
+
+html.nifi-dark #canvas-container path.connection-path { stroke: var(--nd-conn); }
+html.nifi-dark #canvas-container marker path { fill: var(--nd-conn); }
+
+html.nifi-dark #canvas-container g.connection.selected path.connection-path { stroke: var(--nd-select); }
+
+html.nifi-dark #canvas-container rect.connection-label-background { fill: var(--nd-row-a); }
+html.nifi-dark #canvas-container rect.connection-label-border { stroke: var(--nd-border); }
+
+html.nifi-dark #canvas-container rect.backpressure-object,
+html.nifi-dark #canvas-container rect.backpressure-data-size,
+html.nifi-dark #canvas-container rect.backpressure-tick { fill: var(--nd-border); }
+
+html.nifi-dark #canvas-container rect.backpressure-percent.warning { fill: var(--nd-warn); }
+html.nifi-dark #canvas-container rect.backpressure-percent.error { fill: var(--nd-bad); }
+
+/* Back pressure'a yaklaşan / dolan kuyruğun sayısı da renklenir */
+html.nifi-dark #canvas-container g.connection:has(.backpressure-percent.warning) text.queued tspan { fill: var(--nd-warn); }
+html.nifi-dark #canvas-container g.connection:has(.backpressure-percent.error) text.queued tspan { fill: var(--nd-bad); }
+
+html.nifi-dark #canvas-container path.connection-path.full { stroke: var(--nd-bad); }
+html.nifi-dark #canvas-container marker#full path { fill: var(--nd-bad); }
+
+/* ======================================================================
+ * Dialoglar (processor ayarları, detay pencereleri, onay kutuları ...)
+ *
+ * Canvas'taki yöntem: .dialog filtreyi bir kez daha ters çevirir, içindeki renkleri biz boyarız.
+ * Görünen kanal değeri 0.08 + 0.84 * c olduğu için palet önceden hesaplandı: c = (hedef - 20.4) / 0.84.
+ * ====================================================================== */
+
+html.nifi-dark,
+html.nifi-dark-frame {
+  --nd-dlg-bg: #080f19;
+  --nd-dlg-head: #182a3b;
+  --nd-dlg-bar: #101b27;
+  --nd-dlg-tab: #141f2c;
+  --nd-dlg-tab-on: #1d2d3d;
+  --nd-dlg-line: #2d3d4e;
+  --nd-dlg-input: #00030a;
+  --nd-dlg-input-line: #324253;
+  --nd-dlg-btn: #1d2d3d;
+  --nd-dlg-btn-hover: #263a4f;
+  --nd-dlg-primary: #206cc9;
+  --nd-dlg-primary-hover: #2a7ee0;
+  --nd-dlg-text: #f2faff;
+  --nd-dlg-label: #a6bbcb;
+  --nd-dlg-muted: #8ca6b9;
+  --nd-dlg-link: #57d6ff;
+  --nd-dlg-row-a: #09111c;
+  --nd-dlg-row-b: #0f1925;
+  --nd-dlg-cell-line: #263443;
+  --nd-dlg-grid-head: #1c2f42;
+}
+
+html.nifi-dark .dialog {
+  filter: invert(1) hue-rotate(180deg);
+  background: var(--nd-dlg-bg);
+  color: var(--nd-dlg-text);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Başlık ve durum çubuğu */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-header {
+  background: var(--nd-dlg-head);
+  color: #fff;
+  border-bottom: 2px solid var(--nd-select);
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-status-bar { background: var(--nd-dlg-bar); color: var(--nd-dlg-text); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-status-bar-state { color: var(--nd-dlg-text); font-weight: 500; }
+
+/* Sekmeler */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .tab-container { border-bottom-color: var(--nd-dlg-line); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) li.tab {
+  background: var(--nd-dlg-tab);
+  color: var(--nd-dlg-label);
+  border-color: var(--nd-dlg-line);
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) li.tab:hover { color: #fff; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) li.tab.selected-tab {
+  background: var(--nd-dlg-tab-on);
+  color: #fff;
+  border-top: 2px solid var(--nd-select);
+}
+
+/* Etiketler (serif yerine okunaklı sans-serif) ve değerler (salmon yerine beyaz) */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .setting-name {
+  font-family: Roboto, sans-serif;
+  font-weight: 500;
+  color: var(--nd-dlg-label);
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .setting-field,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .processor-enabled-container,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .nf-checkbox-label,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .processor-relationship-container,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .processor-terminate-relationship-container,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .processor-retry-relationship-container {
+  color: var(--nd-dlg-text);
+}
+
+/* Onay kutusu etiketleri (terminate / retry vb.) NiFi'de siyah renkle !important geliyor */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .nf-checkbox-label,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .relationship-name { color: var(--nd-dlg-text) !important; }
+
+/* Girdiler */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) input,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) textarea,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .combo,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .combo-button-normal {
+  background: var(--nd-dlg-input);
+  color: var(--nd-dlg-text);
+  border: 1px solid var(--nd-dlg-input-line);
+  border-radius: 3px;
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) input:focus,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) textarea:focus {
+  border-color: var(--nd-select);
+  outline: none;
+}
+
+/* Yardım ikonu, açılır liste oku, sekme içi küçük düğmeler: koyu teal yerine parlak mavi */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .fa-question-circle,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .combo-arrow,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) button { color: var(--nd-dlg-link); }
+
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) button.button,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) button {
+  background: var(--nd-dlg-btn);
+  border: 1px solid var(--nd-dlg-input-line);
+  border-radius: 3px;
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) button:hover { background: var(--nd-dlg-btn-hover); }
+
+/* Onay kutuları */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .nf-checkbox { color: var(--nd-dlg-muted); border-color: var(--nd-dlg-muted); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .nf-checkbox.checkbox-checked { color: var(--nd-dlg-link); border-color: var(--nd-dlg-link); }
+
+/* Alt düğmeler: ilk düğme (Apply / OK / Add) birincil eylem, diğeri ikincil */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-buttons .button {
+  background: var(--nd-dlg-btn) !important;
+  color: var(--nd-dlg-text) !important;
+  font-weight: 500;
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-buttons .button:hover:not(.disabled-button) { background: var(--nd-dlg-btn-hover) !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-buttons .button:first-child {
+  background: var(--nd-dlg-primary) !important;
+  color: #fff !important;
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-buttons .button:first-child:hover:not(.disabled-button) { background: var(--nd-dlg-primary-hover) !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .dialog-buttons .button.disabled-button { opacity: 0.45; color: var(--nd-dlg-muted) !important; }
+
+/* Property tablosu (Properties sekmesi) ve diğer grid'ler */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slickgrid,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-pane,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-viewport { background: transparent; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-header-column,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-header-columns { background: var(--nd-dlg-grid-head); color: #fff; border-color: var(--nd-dlg-line); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-row.even { background: var(--nd-dlg-row-a); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-row.odd { background: var(--nd-dlg-row-b); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-cell { color: var(--nd-dlg-text); border-color: var(--nd-dlg-cell-line); }
+
+/* ======================================================================
+ * Hamburger menü sayfaları (Summary, Counters, Bulletin Board, Controller Settings ...)
+ *
+ * Bu sayfalar #shell-dialog içindeki bir iframe'de açılıyor. Kabuk (#shell-dialog, .dialog) filtreyi
+ * bir kez ters çeviriyor, bu yüzden iframe'in içi zaten renk alanında (görünen = 0.08 + 0.84 * c).
+ * iframe'e ayrıca filtre uygulanmaz ve iç belge (html.nifi-dark-frame) filtresiz, doğrudan boyanır.
+ * ====================================================================== */
+
+html.nifi-dark #shell-dialog { background: var(--nd-dlg-bg) !important; }
+html.nifi-dark #shell-iframe { filter: none; background: var(--nd-dlg-bg); }
+
+html.nifi-dark-frame,
+html.nifi-dark-frame body {
+  background: var(--nd-dlg-bg);
+  color: var(--nd-dlg-text);
+}
+html.nifi-dark-frame .dialog { background: var(--nd-dlg-bg); color: var(--nd-dlg-text); }
+
+/* Kabuğun üst ve alt şeritleri (#shell-container NiFi'de beyaz) */
+html.nifi-dark #shell-container { background: var(--nd-dlg-bg) !important; }
+
+/* Bağlantılar, tıklanabilir ikonlar, sayfa başlıkları ve salmon renkli metinler */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) :is(a, .link, .pointer.fa) { color: var(--nd-dlg-link); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .pointer.fa:hover { color: #fff; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) :is(.filter-status, .value-color) { color: var(--nd-dlg-text); }
+html.nifi-dark-frame [id$="-header-text"] { color: #fff; }
+
+/* NiFi bu renkleri ID'li kurallarla veriyor, o yüzden !important gerekli */
+html.nifi-dark-frame [id$="-header-text"] { color: #fff !important; }
+html.nifi-dark #shell-undock-button,
+html.nifi-dark #shell-close-button { color: var(--nd-dlg-link) !important; }
+
+/* Dialog dışındaki düğmeler (Apply vb.): birincil mavi. Alt düğme çubuğundaki kurallar daha özgül olduğu için onları ezmez. */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) div.button:not(.disabled-button, .dialog-buttons .button) {
+  background: var(--nd-dlg-primary) !important;
+  color: #fff !important;
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) div.button:not(.disabled-button, .dialog-buttons .button):hover {
+  background: var(--nd-dlg-primary-hover) !important;
+}
+
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .bulletin-link { color: var(--nd-dlg-link) !important; }
+
+/* ---------- Process group sayaç ikonları: her tür kendi rengini taşır ----------
+ * Sayacı sıfır olan ikon ve sayı sönük, sıfırdan büyük olanlar canlı ve kalın. */
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-transmitting { fill: #57d6ff !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-not-transmitting { fill: #aab8c6 !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-running.zero { fill: #30ee85 !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-stopped.zero { fill: #ff4949 !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-invalid.zero { fill: #f2b03b !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-disabled { fill: #c3a6ff !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-up-to-date { fill: #30ee85 !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-locally-modified { fill: #f2b03b !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-stale { fill: #ff8a4d !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-locally-modified-and-stale { fill: #ff4949 !important; }
+html.nifi-dark #canvas-container text.process-group-contents-icon.process-group-sync-failure { fill: #ff7ad9 !important; }
+
+html.nifi-dark #canvas-container text.process-group-contents-icon.zero { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-transmitting.zero ~ text.process-group-transmitting-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-not-transmitting.zero ~ text.process-group-not-transmitting-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-running.zero ~ text.process-group-running-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-stopped.zero ~ text.process-group-stopped-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-invalid.zero ~ text.process-group-invalid-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-disabled.zero ~ text.process-group-disabled-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-up-to-date.zero ~ text.process-group-up-to-date-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-locally-modified.zero ~ text.process-group-locally-modified-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-stale.zero ~ text.process-group-stale-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-locally-modified-and-stale.zero ~ text.process-group-locally-modified-and-stale-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-sync-failure.zero ~ text.process-group-sync-failure-count { opacity: 0.5; }
+html.nifi-dark #canvas-container text.process-group-transmitting:not(.zero) ~ text.process-group-transmitting-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-not-transmitting:not(.zero) ~ text.process-group-not-transmitting-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-running:not(.zero) ~ text.process-group-running-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-stopped:not(.zero) ~ text.process-group-stopped-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-invalid:not(.zero) ~ text.process-group-invalid-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-disabled:not(.zero) ~ text.process-group-disabled-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-up-to-date:not(.zero) ~ text.process-group-up-to-date-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-locally-modified:not(.zero) ~ text.process-group-locally-modified-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-stale:not(.zero) ~ text.process-group-stale-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-locally-modified-and-stale:not(.zero) ~ text.process-group-locally-modified-and-stale-count { font-weight: 700; }
+html.nifi-dark #canvas-container text.process-group-sync-failure:not(.zero) ~ text.process-group-sync-failure-count { font-weight: 700; }
+
+/* ======================================================================
+ * Sol paneller: Navigate ve Operate
+ *
+ * Canvas ve dialoglardaki yöntem: kabuk filtreyi bir kez daha ters çevirir, renkleri biz boyarız
+ * (görünen = 0.08 + 0.84 * c). Palet --nd-dlg-* değişkenlerinden gelir.
+ * ====================================================================== */
+
+html.nifi-dark #graph-controls { filter: invert(1) hue-rotate(180deg); }
+
+/* Kart */
+html.nifi-dark #graph-controls .graph-control {
+  background: rgba(8, 15, 25, 0.96);
+  color: var(--nd-dlg-text);
+  border: 1px solid var(--nd-dlg-line);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+/* Başlık: ikon + başlık + küçült düğmesi */
+html.nifi-dark #graph-controls .graph-control-header-container {
+  background: var(--nd-dlg-head);
+  border-bottom: 2px solid var(--nd-select);
+}
+html.nifi-dark #graph-controls .graph-control-header-icon { color: var(--nd-dlg-link); }
+html.nifi-dark #graph-controls .graph-control-header {
+  color: #fff;
+  font-family: Roboto, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+html.nifi-dark #graph-controls .graph-control-header-action { color: var(--nd-dlg-label); }
+html.nifi-dark #graph-controls .graph-control-header-action:hover { color: #fff; }
+
+/* Küçültülmüş hâl (sol kenardaki ikon) */
+html.nifi-dark #graph-controls .graph-control-docked {
+  background: var(--nd-dlg-head);
+  color: var(--nd-dlg-link);
+  border-radius: 0 8px 8px 0;
+}
+
+/* Düğmeler */
+html.nifi-dark #graph-controls .action-button button,
+html.nifi-dark #graph-controls .action-button {
+  color: var(--nd-dlg-link);
+}
+html.nifi-dark #graph-controls .action-button button {
+  background: var(--nd-dlg-btn);
+  border: 1px solid var(--nd-dlg-input-line);
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+html.nifi-dark #graph-controls .action-button button:hover:not(:disabled) {
+  background: var(--nd-dlg-btn-hover);
+  color: #fff;
+}
+html.nifi-dark #graph-controls .action-button button:disabled,
+html.nifi-dark #graph-controls .action-button button[disabled] {
+  background: transparent;
+  border-color: var(--nd-dlg-cell-line);
+  color: var(--nd-dlg-muted);
+  opacity: 0.4;
+}
+
+/* Operate: başlat yeşil, durdur kırmızı, sil kırmızı */
+html.nifi-dark #graph-controls #operate-start button:not(:disabled) { color: var(--nd-ok-icon); }
+html.nifi-dark #graph-controls #operate-stop button:not(:disabled),
+html.nifi-dark #graph-controls #operate-delete button:not(:disabled) { color: var(--nd-bad-icon); }
+
+/* Operate: seçili bileşenin bilgi bloğu */
+html.nifi-dark #graph-controls #operation-context-logo i,
+html.nifi-dark #graph-controls #operation-context-logo { color: var(--nd-dlg-link); }
+html.nifi-dark #graph-controls #operation-context-name { color: #fff; font-weight: 600; }
+html.nifi-dark #graph-controls #operation-context-type { color: var(--nd-dlg-label); }
+html.nifi-dark #graph-controls #operation-context-id {
+  color: var(--nd-dlg-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+/* Navigate: minimap */
+html.nifi-dark #graph-controls #birdseye {
+  background: var(--nd-dlg-input);
+  border: 1px solid var(--nd-dlg-input-line);
+  border-radius: 6px;
+}
+
+/* ======================================================================
+ * Invalid processor: hafif sarı nefes alma animasyonu
+ * Çerçeve ve zemin sarıya doğru yavaşça açılıp kapanır, rozet hafifçe yanıp söner.
+ * Hareketi azalt ayarı açık olanlarda animasyon çalışmaz.
+ * ====================================================================== */
+
+@keyframes nd-invalid-border {
+  0%, 100% { stroke-opacity: 0.5; stroke-width: 1.5px; }
+  50%      { stroke-opacity: 1; stroke-width: 2.5px; }
+}
+@keyframes nd-invalid-body {
+  0%, 100% { fill: var(--nd-body); }
+  50%      { fill: #403200; } /* gövde altın sarısına döner (görünen ≈ #4a3e14) */
+}
+@keyframes nd-invalid-badge {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) > rect.border {
+  animation: nd-invalid-border 2.4s ease-in-out infinite;
+}
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) > rect.body {
+  animation: nd-invalid-body 2.4s ease-in-out infinite;
+}
+html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#cf9f5d"]),
+html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#cf9f5d"]) + text.run-status-icon + .nd-glyph {
+  animation: nd-invalid-badge 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) > rect.border,
+  html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) > rect.body,
+  html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#cf9f5d"]),
+  html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#cf9f5d"]) + text.run-status-icon + .nd-glyph {
+    animation: none;
+  }
+}
+
+/* Invalid processor: turuncumsu amber yerine net sarı (çerçeve, ışıma ve rozet) */
+html.nifi-dark { --nd-invalid: #ffe62f; }
+
+@keyframes nd-invalid-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 230, 47, 0)); }
+  50%      { filter: drop-shadow(0 0 7px rgba(255, 230, 47, 0.75)); }
+}
+
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) > rect.border { stroke: var(--nd-invalid); }
+html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) {
+  animation: nd-invalid-glow 2.4s ease-in-out infinite;
+}
+html.nifi-dark #canvas-container .nd-badge:has(+ text.run-status-icon[fill="#cf9f5d"]) { fill: var(--nd-invalid); }
+
+@media (prefers-reduced-motion: reduce) {
+  html.nifi-dark #canvas-container g.processor:has(.run-status-icon[fill="#cf9f5d"]) { animation: none; }
+}
+
+/* ======================================================================
+ * Navigate (minimap): invalid bileşenleri sarı işaretler
+ * page-hook.js, #birdseye içindeki SVG grubuna rect.nd-bird-invalid ekler. Dark mode kapalıyken görünmez.
+ * ====================================================================== */
+
+.nd-bird-invalid { display: none; pointer-events: none; }
+
+html.nifi-dark #graph-controls #birdseye .nd-bird-invalid {
+  display: inline;
+  /* panel filtreyi bir kez daha ters çevirdiği için renk formülle telafi edildi (c = (hedef - 20) / 0.84) */
+  fill: #fff91f;
+  stroke: #fff91f;
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+  animation: nd-bird-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes nd-bird-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.nifi-dark #graph-controls #birdseye .nd-bird-invalid { animation: none; opacity: 1; }
+}
+
+/* ======================================================================
+ * Listelerde hover / seçili satır, etiket bulutu ve açıklama başlıkları
+ * (Add Processor, Add Controller Service, Summary tabloları vb.)
+ * Değerler dialog filtresi için c-uzayında yazıldı (görünen = 0.08 + 0.84 * c).
+ * ====================================================================== */
+
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) {
+  --nd-sel-bg: #0d4079;     /* görünen ≈ #1f4a7a, koyu mavi */
+  --nd-hover-bg: #0a2236;   /* görünen ≈ #1d3142, belirgin ama sakin */
+}
+
+/* Hover: satır hafifçe aydınlanır, yazı okunur kalır */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-row:hover .slick-cell { background: var(--nd-hover-bg) !important; color: #fff !important; }
+
+/* Seçili ve aktif satır: NiFi'nin krem rengi yerine koyu mavi zemin, beyaz yazı */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-cell.selected,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-cell.active,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-row.selected .slick-cell,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .slick-row.active .slick-cell {
+  background: var(--nd-sel-bg) !important;
+  color: #fff !important;
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) :is(.slick-cell.selected, .slick-cell.active, .slick-row:hover .slick-cell) * { color: inherit !important; }
+
+/* Etiket bulutu */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) ul.tag-cloud span.link {
+  background-color: var(--nd-dlg-btn) !important;
+  color: var(--nd-dlg-text) !important;
+  border: 1px solid var(--nd-dlg-input-line);
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) ul.tag-cloud span.link:hover { background-color: var(--nd-dlg-btn-hover) !important; color: #fff !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) ul.tag-cloud span.link.selected {
+  background-color: var(--nd-sel-bg) !important;
+  color: #fff !important;
+  border-color: var(--nd-dlg-link);
+}
+
+/* Açıklama başlıkları (NiFi somon renk veriyor) */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) :is(#processor-type-name, [id$="-type-name"]) { color: #fff !important; }
+
+/* ======================================================================
+ * Data Provenance > Show Lineage (iframe içinde tam sayfa grafik)
+ * Değerler iframe belgesi için c-uzayında yazıldı (görünen = 0.08 + 0.84 * c).
+ * ====================================================================== */
+
+html.nifi-dark-frame #provenance-lineage { background: var(--nd-dlg-bar); }
+
+/* Düğümler ve etiketler */
+html.nifi-dark-frame #provenance-lineage g.node.event circle:not(.selected) { fill: #5f7789; stroke: #f2faff; }
+html.nifi-dark-frame #provenance-lineage g.node.flowfile circle:not(.selected) { fill: var(--nd-dlg-btn); stroke: #f2faff; }
+html.nifi-dark-frame #provenance-lineage text.event-type { fill: #f2faff; }
+
+/* Oklar ve çizgiler (NiFi siyah veriyor); seçili olanlar kendi kırmızısını korur */
+html.nifi-dark-frame #provenance-lineage path.link:not(.selected) { fill: none; stroke: #dce9f2; }
+html.nifi-dark-frame #provenance-lineage marker:not([id$="SELECTED"]) path { fill: #dce9f2; }
+
+/* Zaman çubuğu */
+html.nifi-dark-frame #provenance-lineage-slider-container,
+html.nifi-dark-frame #provenance-lineage-slider-container * { color: var(--nd-dlg-text); }
+html.nifi-dark-frame #provenance-lineage-slider.ui-slider { background: var(--nd-dlg-btn); border-color: var(--nd-dlg-input-line); }
+html.nifi-dark-frame #provenance-lineage-slider .ui-slider-handle { background: var(--nd-sel-bg, #0d4079); border-color: var(--nd-dlg-link); }
+
+/* Sağ üst simgeler (indir, geri) ve bağlam menüsü */
+html.nifi-dark-frame #provenance-lineage-downloader,
+html.nifi-dark-frame #provenance-lineage-closer { color: var(--nd-dlg-link); }
+html.nifi-dark-frame #provenance-lineage-downloader:hover,
+html.nifi-dark-frame #provenance-lineage-closer:hover { color: #fff; }
+
+/* Lineage grafiğinin arka planı: SVG'nin doğrudan altındaki tam boy rect (NiFi #f9fafb veriyor) */
+html.nifi-dark-frame #provenance-lineage-container svg > rect { fill: var(--nd-dlg-bar); }
+
+/* ======================================================================
+ * Funnel: canvas'tan ayrışsın diye turuncu vurgu (seçim mavisiyle karışmasın)
+ * Değerler canvas filtresi için c-uzayında yazıldı (görünen = 0.08 + 0.84 * c).
+ * ====================================================================== */
+
+html.nifi-dark #canvas-container g.funnel rect.body {
+  fill: #3a2a12;
+  rx: 8px;
+}
+html.nifi-dark #canvas-container g.funnel rect.border {
+  stroke: #ffb25c;
+  stroke-width: 2px;
+  rx: 8px;
+}
+html.nifi-dark #canvas-container g.funnel text.funnel-icon {
+  fill: #ffd9a8 !important;
+  filter: drop-shadow(0 0 3px rgba(255, 178, 92, 0.6));
+}
+html.nifi-dark #canvas-container g.funnel:hover rect.border { stroke: #ffd9a8; }

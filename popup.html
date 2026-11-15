@@ -79,6 +79,24 @@
   .row[aria-checked="true"] .switch::after { transform: translateX(20px); }
 
   .hint { margin: 12px 2px 0; font-size: 12px; color: var(--muted); }
+
+  .sponsor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: border-color .2s;
+  }
+  .sponsor:hover { border-color: #e35c8a; color: #ff87ad; }
 </style>
 </head>
 <body>
@@ -99,6 +117,10 @@
   </button>
 
   <p class="hint">Değişiklik açık olan NiFi sekmelerine anında uygulanır.</p>
+
+  <a class="sponsor" href="https://github.com/sponsors/enessahin1" target="_blank" rel="noopener">
+    ❤️ Sponsor Ol
+  </a>
 
   <script src="popup.js"></script>
 </body>

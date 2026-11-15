@@ -23,6 +23,11 @@
       "js": ["page-hook.js"],
       "run_at": "document_idle",
       "world": "MAIN"
+    },
+    {
+      "matches": ["*://*/nifi/*", "*://*/nifi"],
+      "js": ["env-switcher.js"],
+      "run_at": "document_idle"
     }
   ],
   "action": {
@@ -34,5 +39,9 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   }
 }

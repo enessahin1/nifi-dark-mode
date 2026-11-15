@@ -13,3 +13,7 @@ toggle.addEventListener('click', () => {
   render(enabled);
   chrome.storage.sync.set({ enabled });
 });
+
+document.getElementById('manage').addEventListener('click', () => {
+  chrome.runtime.openOptionsPage();
+});

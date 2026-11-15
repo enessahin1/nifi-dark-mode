@@ -97,6 +97,26 @@
     transition: border-color .2s;
   }
   .sponsor:hover { border-color: #e35c8a; color: #ff87ad; }
+
+  .manage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .manage:hover { border-color: #3b4957; }
 </style>
 </head>
 <body>
@@ -117,6 +137,8 @@
   </button>
 
   <p class="hint">Changes apply instantly to open NiFi tabs.</p>
+
+  <button class="manage" id="manage" type="button">⚙️ Clusterları yönet</button>
 
   <a class="sponsor" href="https://github.com/sponsors/enessahin1" target="_blank" rel="noopener">
     ❤️ Sponsor

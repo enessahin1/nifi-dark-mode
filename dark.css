@@ -778,3 +778,307 @@ html.nifi-dark .nd-prod-frame {
   border-color: #ff2830; /* shows on screen as roughly #e5484d */
   box-shadow: inset 0 0 14px rgba(255, 40, 48, 0.45);
 }
+
+/* ======================================================================
+ * Bağlantı seçimi ve taşıma / bağlama geri bildirimleri
+ * NiFi bu durumlar için saf renkler (#0000ff, #00ff00, #444 ...) kullanıyor; canvas'ın çift ters filtresi
+ * altında bunlar koyu zeminde kayboluyordu. Renkler c-uzayında, ölçülerek ayarlandı.
+ * ====================================================================== */
+
+/* Seçili bağlantı: kalın çizgi ve belirgin uç noktalar (başlangıç kırmızı, dönüm sarı, bitiş mavi).
+   Canvas'ın çift filtresi doygun sarıyı ve yeşili üretemiyor; değerler bu zincirin modeliyle, ekranda ölçülerek seçildi. */
+html.nifi-dark #canvas-container g.connection.selected path.connection-path { stroke: #0591ff; stroke-width: 3px; }
+html.nifi-dark #canvas-container g.connection.selected path.connection-selection-path { stroke: #c8b40a; stroke-width: 2px; }
+
+html.nifi-dark #canvas-container g.connection rect.linepoint {
+  stroke: #ffffff;
+  stroke-width: 2px;
+  paint-order: stroke;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+}
+html.nifi-dark #canvas-container g.connection rect.startpoint { fill: #ff2b2b; }
+html.nifi-dark #canvas-container g.connection rect.midpoint { fill: #c8b40a; }
+html.nifi-dark #canvas-container g.connection rect.endpoint { fill: #0591ff; }
+
+/* Taşırken veya seçerken çıkan geçici kare: koyu gri yerine açık mavi kesik çizgi ve hafif dolgu */
+html.nifi-dark #canvas-container rect.component-selection,
+html.nifi-dark #canvas-container rect.drag-selection,
+html.nifi-dark #canvas-container rect.label-drag {
+  stroke: #8fd4ff;
+  stroke-opacity: 1;
+  stroke-width: 2px;
+  stroke-dasharray: 6 4;
+  fill: rgba(76, 160, 255, 0.14);
+}
+html.nifi-dark #canvas-container .brush .selection {
+  stroke: #8fd4ff;
+  stroke-width: 1.5px;
+  fill: rgba(76, 160, 255, 0.16);
+  fill-opacity: 1;
+}
+
+/* Taşınan bileşenin eski yerinde kalan gölge: koyu zeminde okunur gri-beyaz */
+html.nifi-dark #canvas-container g.component rect.border.ghost { stroke: #e6eef4 !important; }
+html.nifi-dark #canvas-container g.connection.ghost path.connection-path,
+html.nifi-dark #canvas-container g.connection.ghost rect.connection-label { stroke: #e6eef4; }
+
+/* Bağlantı çekerken: hedef yeşil, uygun olmayan kırmızı. Önceki durum kurallarımızı ezmek için !important. */
+html.nifi-dark #canvas-container g.component.connectable-destination rect.border {
+  stroke: #39ef72 !important;
+  stroke-width: 3px !important;
+  stroke-opacity: 1 !important;
+}
+html.nifi-dark #canvas-container path.connector { stroke: #ff2b2b; stroke-opacity: 0.9; }
+html.nifi-dark #canvas-container path.connector.connectable { stroke: #39ef72; stroke-opacity: 1; }
+
+/* Process group'un üstüne bırakırken mavi vurgu */
+html.nifi-dark #canvas-container g.process-group.drop rect.border {
+  stroke: #4ca0ff !important;
+  stroke-width: 3px !important;
+  stroke-opacity: 1 !important;
+}
+
+/* Boş tablo (veri yokken Data Provenance, Summary, Bulletin vb.): SlickGrid'in kök öğesi beyaz zeminli ve sınıfı
+   dinamik (slickgrid_233394 gibi), bu yüzden yukarıdaki .slickgrid kuralı eşleşmiyordu. Satır yokken bu zemin
+   olduğu gibi görünüyordu. */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) [class*="slickgrid"] { background: transparent !important; }
+
+/* Açılışta beyaz ekran: NiFi tabloya ID ile beyaz zemin veriyor (örn. #provenance-table { position: absolute;
+   inset: 88px 0 47px; background-color: #fff }), yani sayfanın neredeyse tamamını kaplayan beyaz bir kutu.
+   SlickGrid başlatılıp tabloya dinamik slickgrid_NNN sınıfı gelene kadar bu kutu ekranda kalıyor; sunucu yavaşsa
+   saniyelerce. Yukarıdaki sınıf kuralı o ana kadar işlemediği için kimliğe de bağlıyoruz. */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) [id$="-table"] { background: transparent !important; }
+
+/* Pencere açıkken arkadaki perde (.modal-glass): NiFi zemini koyu veriyor ama sayfa filtresi onu açık griye
+   çeviriyordu ve ekran göz alıyordu. Filtre öncesi beyaz yazıyoruz, filtre sonrası neredeyse siyah görünür. */
+html.nifi-dark .modal-glass {
+  background: #fff !important;
+  opacity: 0.78 !important;
+}
+
+/* Provenance olay penceresi (Details / Attributes / Content) ve benzer ayrıntı pencereleri:
+   NiFi etiket için siyah, değer için somon, başlık için gri-mavi veriyor; koyu zeminde okunmuyordu. */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .detail-name { color: var(--nd-dlg-label) !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .detail-value { color: var(--nd-dlg-text) !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .event-header { color: #fff !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) :is(.unset, span.unset) { color: var(--nd-dlg-muted) !important; }
+
+/* Attributes ve Content sekmeleri: aynı renk sorunu; Download / View düğmeleri de NiFi'nin açık zeminiyle kalıyordu */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) :is(.attribute-name, .content-detail-name) { color: var(--nd-dlg-label) !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) :is(.attribute-value, .content-detail-value) { color: var(--nd-dlg-text) !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .content-detail-header,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .content-header { color: #fff !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) div.button:not(.dialog-buttons .button) span { color: inherit !important; }
+
+/* İkincil düğmeler (Download / View vb.): NiFi açık gri zemin ve koyu teal yazı veriyor */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .secondary-button {
+  background: var(--nd-dlg-btn) !important;
+  color: var(--nd-dlg-link) !important;
+  border: 1px solid var(--nd-dlg-input-line);
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame) .secondary-button:hover { background: var(--nd-dlg-btn-hover) !important; color: #fff !important; }
+
+/* ======================================================================
+ * Code editors (CodeMirror), content viewer and custom UIs (Jolt etc.)
+ * Same technique as the dialog: colors are in c-space (visible = 20.4 + 0.84 * c).
+ * The editor used to be nearly black (#00030a) or left white; it now has a bluish slate background.
+ * ====================================================================== */
+
+html.nifi-dark,
+html.nifi-dark-frame {
+  --nd-ed-bg: #15283c;
+  --nd-ed-gutter: #0e1d2e;
+  --nd-ed-line: #2d435c;
+  --nd-ed-active: #1c334c;
+  --nd-ed-sel: #27649f;
+  --nd-ed-text: #faffff;
+}
+
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) textarea {
+  background: var(--nd-ed-bg);
+  color: var(--nd-ed-text);
+}
+
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror {
+  background: var(--nd-ed-bg);
+  color: var(--nd-ed-text);
+  border: 1px solid var(--nd-ed-line);
+  border-radius: 3px;
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-gutters {
+  background: var(--nd-ed-gutter);
+  border-right: 1px solid var(--nd-ed-line);
+}
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-linenumber { color: #6c859b; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-cursor { border-left-color: #fff; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-activeline-background { background: var(--nd-ed-active); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-selected,
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-focused .CodeMirror-selected { background: var(--nd-ed-sel); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-matchingbracket { color: #fff !important; background: #28415c; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-nonmatchingbracket { color: #ff6767 !important; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror-lines { color: var(--nd-ed-text); }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror pre { color: inherit; }
+
+/* Syntax colors */
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror :is(.cm-keyword, .cm-operator) { color: #ff928a; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror .cm-string { color: #ace6ff; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror .cm-string-2 { color: #ffbd67; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror :is(.cm-number, .cm-atom, .cm-attribute, .cm-property) { color: #78ccff; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror .cm-comment { color: #8da4b9; font-style: italic; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror :is(.cm-def, .cm-variable-2, .cm-variable-3) { color: #e2b0ff; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror :is(.cm-builtin, .cm-qualifier) { color: #ffbd67; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror .cm-tag { color: #7efb88; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror :is(.cm-meta, .cm-hr) { color: #a5bcd0; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror .cm-bracket { color: #d7e4f0; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror :is(.cm-link, .cm-header) { color: #50adff; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror .cm-error { color: #ff6767; }
+:is(html.nifi-dark .dialog, html.nifi-dark-frame, html.nifi-dark .slickgrid-nf-editor) .CodeMirror .cm-variable { color: var(--nd-ed-text); }
+
+/* Content viewer: plain text / hex area */
+html.nifi-dark-frame :is(pre, code, #content, .content) {
+  background: var(--nd-ed-bg);
+  color: var(--nd-ed-text);
+}
+
+/* Jolt and other custom UIs (angular-material) */
+html.nifi-dark-frame :is(md-content, md-dialog, md-dialog-content, md-card, md-list, md-list-item, md-tabs, md-tab-content) {
+  background: var(--nd-dlg-bg);
+  color: var(--nd-dlg-text);
+}
+html.nifi-dark-frame md-toolbar { background: #1d3a5a; color: var(--nd-dlg-text); }
+html.nifi-dark-frame :is(.large-label, .modal-label, .info) { color: var(--nd-dlg-label); }
+html.nifi-dark-frame .modal-header-label { color: #fff; }
+html.nifi-dark-frame md-select .md-select-value {
+  background: #1a2f47;
+  color: var(--nd-dlg-text);
+  border-bottom-color: var(--nd-dlg-line);
+}
+html.nifi-dark-frame md-select-menu md-content { background: #1a2f47; }
+html.nifi-dark-frame md-option { background: #1a2f47; border-color: var(--nd-dlg-line); }
+html.nifi-dark-frame md-option:hover,
+html.nifi-dark-frame md-option[selected] { background: #28415c; }
+html.nifi-dark-frame md-option .md-text { color: var(--nd-dlg-text); }
+html.nifi-dark-frame div.scrollable { border-color: var(--nd-dlg-line); }
+html.nifi-dark-frame .primary-button { background: var(--nd-dlg-primary); color: #fff; }
+html.nifi-dark-frame .primary-button:hover:not(.disabled-button) { background: var(--nd-dlg-primary-hover); }
+html.nifi-dark-frame button[disabled] { opacity: .5; cursor: default; }
+html.nifi-dark-frame button.small-button { background: var(--nd-dlg-btn); }
+html.nifi-dark-frame :is(input, md-input-container input) { background: var(--nd-ed-bg); color: var(--nd-dlg-text); }
+html.nifi-dark-frame md-backdrop { background: #000; }
+
+/* ======================================================================
+ * Hover tooltips (red bulletin box on a processor, other qtip tooltips)
+ * NiFi paints these rgba(0,0,0,.8) and appends them to <body>, so the page-level invert turned them white.
+ * Inverted back once more and colored in c-space like the dialogs (display ~ #1f2c3a).
+ * ====================================================================== */
+
+html.nifi-dark .qtip,
+html.nifi-dark div.nifi-tooltip:not(.qtip) {
+  filter: invert(1) hue-rotate(180deg);
+}
+html.nifi-dark :is(.qtip, .qtip-nifi, div.nifi-tooltip) {
+  background: #0b1a2a !important;
+  color: #faffff !important;
+  border: 1px solid #1c2d40 !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55);
+}
+html.nifi-dark :is(.qtip, div.nifi-tooltip) :is(.qtip-content, div, span, b, strong, li) { color: inherit; }
+html.nifi-dark :is(.qtip, div.nifi-tooltip) .qtip-content { background: transparent !important; }
+
+/* ======================================================================
+ * Solo mode: pages opened in their own tab/window (View content, Jolt opened directly ...).
+ * There is no parent filter here, so the colors are written directly as the colors you will see.
+ * content.js adds nifi-dark-solo together with nifi-dark-frame.
+ * ====================================================================== */
+
+html.nifi-dark-solo {
+  --nd-dlg-bg: #1f2a37;
+  --nd-dlg-head: #2a3b4e;
+  --nd-dlg-bar: #243242;
+  --nd-dlg-tab: #243242;
+  --nd-dlg-tab-on: #2f4257;
+  --nd-dlg-line: #3a4d62;
+  --nd-dlg-input: #263647;
+  --nd-dlg-input-line: #3f536a;
+  --nd-dlg-btn: #2c3e52;
+  --nd-dlg-btn-hover: #38506a;
+  --nd-dlg-primary: #2f7fd6;
+  --nd-dlg-primary-hover: #4192ec;
+  --nd-dlg-text: #e8f0f6;
+  --nd-dlg-label: #a9bccb;
+  --nd-dlg-muted: #8fa4b5;
+  --nd-dlg-link: #6cc4ff;
+  --nd-dlg-row-a: #223040;
+  --nd-dlg-row-b: #1c2835;
+  --nd-dlg-cell-line: #33465a;
+  --nd-dlg-grid-head: #2a3d52;
+  --nd-ed-bg: #263647;
+  --nd-ed-gutter: #202d3b;
+  --nd-ed-line: #3a4d62;
+  --nd-ed-active: #2c3f54;
+  --nd-ed-sel: #35689a;
+  --nd-ed-text: #eef5fa;
+}
+html.nifi-dark-solo .CodeMirror-linenumber { color: #7f95a8; }
+html.nifi-dark-solo md-toolbar { background: #2d4560; }
+html.nifi-dark-solo md-select .md-select-value,
+html.nifi-dark-solo md-select-menu md-content,
+html.nifi-dark-solo md-option { background: #2a3c50; }
+html.nifi-dark-solo :is(md-option:hover, md-option[selected]) { background: #364b62; }
+
+/* ======================================================================
+ * Property value editor (click a property value: Script Body, SQL, Expression ...) - all processors
+ * NiFi appends div.slickgrid-nf-editor to <body> with an inline white background, so the page-level invert
+ * made it near black. Inverted back once and colored in c-space like the dialogs.
+ * ====================================================================== */
+
+html.nifi-dark .slickgrid-nf-editor:not(.dialog *),
+html.nifi-dark .CodeMirror-hints:not(.dialog *) {
+  filter: invert(1) hue-rotate(180deg);
+}
+html.nifi-dark .slickgrid-nf-editor {
+  background: var(--nd-dlg-bg) !important;
+  color: var(--nd-dlg-text);
+  border: 1px solid var(--nd-dlg-line);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+}
+html.nifi-dark .slickgrid-nf-editor :is(.nf-checkbox-label, label, span, .setting-name) { color: var(--nd-dlg-text); }
+html.nifi-dark .slickgrid-nf-editor .nf-editor .CodeMirror.blank {
+  background: var(--nd-dlg-bar);
+  color: var(--nd-dlg-muted);
+  border-color: var(--nd-dlg-line);
+}
+html.nifi-dark .slickgrid-nf-editor :is(input, textarea) {
+  background: var(--nd-ed-bg);
+  color: var(--nd-ed-text);
+  border: 1px solid var(--nd-ed-line);
+}
+/* Ok / Cancel: NiFi sets their colors inline (and again on hover), so !important is needed */
+html.nifi-dark .slickgrid-nf-editor div.button {
+  background: var(--nd-dlg-primary) !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 3px;
+}
+html.nifi-dark .slickgrid-nf-editor div.button:hover { background: var(--nd-dlg-primary-hover) !important; }
+html.nifi-dark .slickgrid-nf-editor div.secondary-button {
+  background: var(--nd-dlg-btn) !important;
+  color: var(--nd-dlg-link) !important;
+  border: 0 !important;
+  box-shadow: inset 0 0 0 1px var(--nd-dlg-input-line); /* a real border would widen it and wrap the pair (container is exactly 212px) */
+  border-radius: 3px;
+}
+html.nifi-dark .slickgrid-nf-editor div.secondary-button:hover {
+  background: var(--nd-dlg-btn-hover) !important;
+  color: #fff !important;
+}
+html.nifi-dark .slickgrid-nf-editor :is(div.button, div.secondary-button) span { color: inherit !important; }
+
+/* Autocomplete list (Expression Language / script hints) */
+html.nifi-dark .CodeMirror-hints {
+  background: var(--nd-ed-bg) !important;
+  border: 1px solid var(--nd-ed-line) !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55) !important;
+}
+html.nifi-dark .CodeMirror-hint { color: var(--nd-ed-text) !important; }
+html.nifi-dark li.CodeMirror-hint-active { background: var(--nd-ed-sel) !important; color: #fff !important; }

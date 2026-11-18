@@ -12,7 +12,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*/nifi/*", "*://*/nifi"],
+      "matches": ["*://*/nifi/*", "*://*/nifi", "*://*/nifi-*content-viewer*", "*://*/nifi-*-ui-*"],
       "css": ["dark.css"],
       "js": ["content.js"],
       "run_at": "document_start",

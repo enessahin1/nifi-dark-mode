@@ -1,6 +1,9 @@
 // Hamburger menu pages (Summary, etc.) open in an iframe inside #shell-dialog on the main page.
 // The shell already inverts the filter, so the iframe document is unfiltered and styled with a separate class.
-const CLASS = window === window.top ? 'nifi-dark' : 'nifi-dark-frame';
+// A page opened in its own tab (View content, standalone custom UIs) has no parent filter either,
+// so it gets nifi-dark-frame plus nifi-dark-solo, whose palette is written as the final visible colors.
+const STANDALONE = !/^\/nifi(\/|$)/.test((() => { try { return window.top.location.pathname; } catch (e) { return location.pathname; } })());
+const CLASSES = window === window.top && !STANDALONE ? ['nifi-dark'] : STANDALONE ? ['nifi-dark-frame', 'nifi-dark-solo'] : ['nifi-dark-frame'];
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // The class needs to be applied before the chrome.storage response arrives: in those few milliseconds
@@ -26,7 +29,7 @@ function writeCache(enabled) {
 }
 
 function apply(enabled) {
-  document.documentElement.classList.toggle(CLASS, enabled);
+  CLASSES.forEach((cls) => document.documentElement.classList.toggle(cls, enabled));
 }
 
 apply(readCache());

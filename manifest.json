@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Nifi Dark Mode 1.x",
+  "name": "Nifi 1.x Dark Mode",
   "version": "0.1.2",
   "description": "Dark theme for the Apache NiFi interface.",
   "permissions": ["storage"],

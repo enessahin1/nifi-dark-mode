@@ -3,6 +3,14 @@
   "name": "Nifi 1.x Dark Mode",
   "version": "0.1.2",
   "description": "Dark theme for the Apache NiFi interface.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "nifi-1x-dark-mode@enessahin1",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
   "permissions": ["storage"],
   "icons": {
     "16": "icons/icon16.png",
